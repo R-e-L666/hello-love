@@ -1,0 +1,752 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>心动测试 · 那个人对你到底有没有动心</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg-dark:#0f0a1a;
+  --card-bg:rgba(26, 16, 37, 0.65);
+  --card-border:rgba(255,255,255,0.08);
+  --pink:#ff6b9d;
+  --purple:#a855f7;
+  --text-main:#f0ebf8;
+  --text-sub:#b4a8c9;
+  --line:rgba(255,255,255,0.1);
+}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Helvetica Neue","Microsoft YaHei",sans-serif;
+  background-color: var(--bg-dark);
+  /* 浪漫星空背景底色 */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(255, 107, 157, 0.12) 0%, transparent 45%);
+  background-attachment: fixed;
+  color:var(--text-main);
+  min-height:100vh;padding:26px 18px 46px;
+  display:flex;justify-content:center;-webkit-font-smoothing:antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ================= 星空特效加强版 ================= */
+
+/* 第一层：细碎的小星星，偏白，快速闪烁 */
+body::before {
+  content: "";
+  position: fixed; top: 0; left: 0; width: 1.5px; height: 1.5px;
+  border-radius: 50%; background: transparent;
+  box-shadow: 
+    10vw 10vh #fff, 20vw 30vh rgba(255,255,255,0.8), 80vw 15vh #fff, 
+    90vw 60vh rgba(255,255,255,0.6), 30vw 80vh #fff, 70vw 90vh rgba(255,255,255,0.9),
+    50vw 40vh rgba(255,255,255,0.4), 5vw 70vh #fff, 95vw 20vh #fff,
+    45vw 15vh #fff, 12vw 45vh #fff, 88vw 35vh #fff, 62vw 85vh #fff,
+    35vw 65vh #fff, 55vw 95vh #fff, 25vw 5vh #fff, 75vw 55vh #fff;
+  animation: twinkle 3.5s infinite alternate;
+  z-index: -2; pointer-events: none;
+}
+
+/* 第二层：偏大、带粉色和紫色的微光星，慢速闪烁 */
+body::after {
+  content: "";
+  position: fixed; top: 0; left: 0; width: 2.5px; height: 2.5px;
+  border-radius: 50%; background: transparent;
+  box-shadow: 
+    15vw 60vh #ffd5e5, 40vw 20vh #e0c3fc, 60vw 70vh #ffd5e5, 
+    85vw 80vh #e0c3fc, 75vw 10vh #ffd5e5, 25vw 15vh #e0c3fc,
+    55vw 30vh #fff, 30vw 40vh #cce5ff, 65vw 50vh #fff,
+    5vw 85vh #ffd5e5, 95vw 45vh #e0c3fc, 48vw 75vh #fff;
+  animation: twinkle 2.8s infinite alternate-reverse;
+  animation-delay: 1.2s;
+  z-index: -2; pointer-events: none;
+}
+
+/* 第三层：大光晕与十字星芒效果，呼吸闪烁 */
+.app::before {
+  content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-image: 
+    /* 大光晕 */
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.3) 0%, transparent 2%),
+    radial-gradient(circle at 85% 15%, rgba(255,255,255,0.4) 0%, transparent 3%),
+    radial-gradient(circle at 75% 75%, rgba(255,255,255,0.25) 0%, transparent 2%),
+    radial-gradient(circle at 25% 85%, rgba(255,255,255,0.3) 0%, transparent 2%),
+    radial-gradient(circle at 50% 40%, rgba(255,255,255,0.15) 0%, transparent 15%);
+  animation: glowPulse 4s infinite alternate;
+  z-index: -1; pointer-events: none;
+}
+
+/* 闪烁动画 */
+@keyframes twinkle { 
+  0% { opacity: 0.4; } 
+  100% { opacity: 1; } 
+}
+/* 光晕呼吸动画 */
+@keyframes glowPulse {
+  0% { opacity: 0.5; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+/* ================================================= */
+
+.app{width:100%;max-width:420px;position:relative;z-index:1}
+.screen{display:none}
+.screen.active{display:block;animation:screenIn .4s cubic-bezier(.22,.61,.36,1)}
+@keyframes screenIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+
+/* 卡片：半透明毛玻璃 */
+.card{
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:26px;
+  padding:30px 22px 26px;
+  box-shadow:0 15px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* 首页 */
+.logo{
+  width:72px;height:72px;margin:0 auto 22px;border-radius:24px;
+  background:linear-gradient(135deg, rgba(255,107,157,0.2), rgba(168,85,247,0.2));
+  border:1px solid rgba(255,255,255,0.15);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--pink);
+  box-shadow: 0 0 20px rgba(255,107,157,0.2);
+}
+.h1{font-size:22px;font-weight:700;text-align:center;letter-spacing:1px;margin-bottom:8px;color:#fff}
+.h-sub{font-size:13.5px;color:var(--text-sub);text-align:center;line-height:1.7;margin-bottom:28px;letter-spacing:.3px}
+.pwd-input{
+  width:100%;height:58px;border-radius:18px;border:1.5px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05);text-align:center;font-size:23px;font-weight:600;
+  letter-spacing:9px;text-indent:9px;color:var(--pink);outline:none;
+  font-family:inherit;transition:.22s;
+}
+.pwd-input::placeholder{font-size:14px;font-weight:400;letter-spacing:1px;text-indent:1px;color:#7a6a8f}
+.pwd-input:focus{border-color:var(--pink);background:rgba(255,255,255,0.08);box-shadow:0 0 0 4px rgba(255,107,157,0.15)}
+.err{height:20px;margin-top:12px;text-align:center;font-size:13px;color:var(--pink);opacity:0;transition:opacity .2s}
+.err.show{opacity:1}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .4s}
+
+/* 按钮 */
+.btn{
+  width:100%;height:54px;border:0;border-radius:18px;
+  background:linear-gradient(135deg,#ff6b9d,#a855f7);
+  color:#fff;font-size:16px;font-weight:600;font-family:inherit;letter-spacing:1px;
+  cursor:pointer;margin-top:18px;box-shadow:0 8px 24px rgba(255,107,157,0.3);
+  transition:transform .15s,box-shadow .15s;
+}
+.btn:active{transform:scale(.98);box-shadow:0 4px 12px rgba(255,107,157,0.2)}
+.btn:disabled{opacity:.7}
+.btn.ghost{background:rgba(255,255,255,0.05);color:#fff;border:1.5px solid rgba(255,255,255,0.15);box-shadow:none}
+.btn.ghost:active{background:rgba(255,255,255,0.1)}
+
+/* 性别选择 */
+.gender-list{display:flex;flex-direction:column;gap:14px;margin-top:4px}
+.gender-item{
+  display:flex;align-items:center;gap:16px;width:100%;padding:17px 20px;
+  border-radius:20px;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);
+  font-family:inherit;font-size:16.5px;font-weight:600;color:#dcd3e8;cursor:pointer;
+  text-align:left;transition:.22s;
+}
+.gender-item:active{transform:scale(.985)}
+.g-icon{
+  flex:0 0 auto;width:46px;height:46px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.08);font-size:24px;line-height:1;transition:.22s;
+}
+.gender-item.on{
+  border-color:rgba(255,107,157,0.6);background:linear-gradient(135deg, rgba(255,107,157,0.15), rgba(168,85,247,0.15));
+  box-shadow:0 0 20px rgba(255,107,157,0.2);color:#fff;
+}
+.gender-item.on .g-icon{background:rgba(255,255,255,0.15)}
+
+.intro-wrap{display:none}
+.intro-wrap.show{display:block;animation:fadeUp .42s cubic-bezier(.22,.61,.36,1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.intro{
+  position:relative;margin-top:22px;padding:19px 20px 19px 24px;border-radius:18px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  font-size:14.5px;line-height:1.95;color:var(--text-sub);letter-spacing:.2px;overflow:hidden;
+}
+.intro::before{
+  content:"";position:absolute;left:0;top:22px;bottom:22px;width:3px;
+  border-radius:0 3px 3px 0;background:linear-gradient(180deg,var(--pink),var(--purple));
+}
+
+/* 答题 */
+.prog-label{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--text-sub);letter-spacing:.6px;margin-bottom:10px}
+.prog-bar{height:6px;border-radius:99px;background:rgba(255,255,255,0.1);overflow:hidden;margin-bottom:26px}
+.prog-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width .35s cubic-bezier(.22,.61,.36,1);box-shadow:0 0 10px rgba(255,107,157,0.5)}
+.q-title{font-size:18.5px;font-weight:600;line-height:1.68;letter-spacing:.2px;color:#fff;margin-bottom:22px}
+.q-fade{animation:qIn .3s ease}
+@keyframes qIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{
+  display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;
+  padding:16px 18px;border-radius:16px;border:1.5px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.03);font-family:inherit;font-size:14.5px;line-height:1.55;
+  color:#dcd3e8;cursor:pointer;transition:.18s;
+}
+.opt:active{background:rgba(255,255,255,0.08)}
+.badge{
+  flex:0 0 auto;width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.1);font-size:11.5px;font-weight:700;
+  color:var(--text-sub);margin-top:1px;transition:.18s;
+}
+.opt.on{
+  background:linear-gradient(135deg, rgba(255,107,157,0.9), rgba(168,85,247,0.9));
+  border-color:transparent;color:#fff;
+  box-shadow:0 6px 20px rgba(168,85,247,0.4);
+}
+.opt.on .badge{background:rgba(255,255,255,0.3);color:#fff}
+
+.back-row{margin-top:24px;text-align:center}
+.back-btn{background:none;border:0;font-family:inherit;font-size:13.5px;color:var(--text-sub);padding:8px 16px;cursor:pointer;transition:.18s}
+.back-btn:active{color:#fff}
+.back-btn:disabled{opacity:.3;cursor:default}
+
+/* 结果页 */
+.pct-hero{
+  text-align:center;padding:24px 0 20px;margin:-6px -6px 0;border-radius:20px;
+  background:radial-gradient(circle at 50% 30%, rgba(168,85,247,0.15) 0%, transparent 70%);
+}
+.pct-label{font-size:12.5px;color:var(--text-sub);letter-spacing:3px;margin-bottom:8px}
+.pct{line-height:1;margin-bottom:16px}
+.pct-num,.pct-sign{
+  font-weight:800;
+  background:linear-gradient(135deg, #ff9ec0, #ff6b9d 40%, #a855f7);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow: 0 0 30px rgba(255,107,157,0.3);
+}
+.pct-num{font-size:72px;letter-spacing:-2px}
+.pct-sign{font-size:32px;margin-left:1px}
+
+.tier-badge{
+  display:inline-block;padding:8px 22px;border-radius:99px;
+  font-size:14px;font-weight:600;color:#fff;letter-spacing:1px;
+}
+.tier-badge.t0{background:linear-gradient(135deg,#ff6b9d,#ff8fab);box-shadow:0 6px 20px rgba(255,107,157,0.4)}
+.tier-badge.t1{background:linear-gradient(135deg,#a855f7,#c084fc);box-shadow:0 6px 20px rgba(168,85,247,0.4)}
+.tier-badge.t2{background:linear-gradient(135deg,#6b7280,#9ca3af);box-shadow:0 6px 20px rgba(107,114,128,0.3)}
+.tier-badge.t3{background:linear-gradient(135deg,#4b5563,#6b7280);box-shadow:0 6px 20px rgba(75,85,99,0.3)}
+
+.tier{
+  text-align:center;font-size:18px;font-weight:700;line-height:1.55;
+  color:#fff;padding:18px 6px 6px;margin-bottom:6px;
+}
+
+.section-title{
+  font-size:14px;font-weight:700;color:#fff;letter-spacing:1px;
+  margin:26px 0 16px;padding-left:12px;position:relative;
+}
+.section-title::before{
+  content:"";position:absolute;left:0;top:3px;bottom:3px;width:3px;border-radius:3px;
+  background:linear-gradient(180deg,var(--pink),var(--purple));
+}
+
+/* 维度 */
+.dims{display:flex;flex-direction:column;gap:18px}
+.dim-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.dim-name{font-size:14px;font-weight:600;color:#dcd3e8}
+.dim-val{font-size:14px;font-weight:700;color:var(--pink)}
+.dim-bar{height:6px;border-radius:99px;background:rgba(255,255,255,0.1);overflow:hidden;margin-bottom:6px}
+.dim-bar i{
+  display:block;height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--purple),var(--pink));
+  transition:width .8s cubic-bezier(.22,.61,.36,1);
+  box-shadow:0 0 8px rgba(255,107,157,0.6);
+}
+.dim-desc{font-size:12px;color:#7a6a8f;letter-spacing:.2px}
+
+/* 解读 */
+.res-text{font-size:14.5px;line-height:1.95;color:#dcd3e8;letter-spacing:.2px}
+.res-text p{margin-bottom:13px}
+.res-text p:last-child{margin-bottom:0}
+
+/* 建议 */
+.advice-box{
+  margin-top:24px;padding:20px;border-radius:18px;
+  background:linear-gradient(135deg, rgba(255,107,157,0.1), rgba(168,85,247,0.1));border:1px solid rgba(255,107,157,0.2);
+}
+.advice-title{font-size:14px;font-weight:700;color:var(--pink);margin-bottom:10px;letter-spacing:.5px}
+.advice-text{font-size:14px;line-height:1.9;color:#e0d6ec}
+
+/* 温馨提示 */
+.tip-card{
+  margin-top:16px;padding:18px;border-radius:18px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+}
+.tip-title{font-size:13px;font-weight:700;color:#b4a8c9;margin-bottom:8px;letter-spacing:.5px}
+.tip-text{font-size:13px;line-height:1.8;color:#8a7d9e}
+
+.tiny{text-align:center;font-size:11.5px;color:#5d516d;letter-spacing:.4px;margin-top:22px}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ① 密码解锁 -->
+  <section class="screen active" id="s-pwd">
+    <div class="card" id="pwdCard">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+        </svg>
+      </div>
+      <h1 class="h1">心动测试</h1>
+      <p class="h-sub">那个人对你到底有没有动心<br>请输入购买后获得的口令</p>
+      <input class="pwd-input" id="pwdInput" type="tel" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="请输入 4 位数字口令">
+      <div class="err" id="pwdErr">口令不正确，请核对后重试</div>
+      <button class="btn" id="pwdBtn">解 锁 测 试</button>
+    </div>
+  </section>
+
+  <!-- ② 性别选择 -->
+  <section class="screen" id="s-gender">
+    <div class="card">
+      <h1 class="h1">先告诉我</h1>
+      <p class="h-sub">你想测的那个人，是男生还是女生？</p>
+      <div class="gender-list">
+        <button class="gender-item" data-g="boy"><span class="g-icon">👦</span><span>Ta 是男生</span></button>
+        <button class="gender-item" data-g="girl"><span class="g-icon">👧</span><span>Ta 是女生</span></button>
+      </div>
+      <div class="intro-wrap" id="introWrap">
+        <div class="intro" id="introText"></div>
+        <button class="btn" id="startBtn">开 始 测 试</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 答题 -->
+  <section class="screen" id="s-quiz">
+    <div class="card">
+      <div class="prog-label"><span id="progNum">第 1 / 38 题</span><span id="progPct">0%</span></div>
+      <div class="prog-bar"><i id="progFill"></i></div>
+      <div id="qBox">
+        <h2 class="q-title" id="qTitle"></h2>
+        <div class="opts" id="opts"></div>
+      </div>
+      <div class="back-row"><button class="back-btn" id="backBtn">← 返回上一题</button></div>
+    </div>
+  </section>
+
+  <!-- ④ 结果 -->
+  <section class="screen" id="s-result">
+    <div class="card">
+      <div class="pct-hero">
+        <div class="pct-label">心 动 指 数</div>
+        <div class="pct"><span class="pct-num" id="pctNum">0</span><span class="pct-sign">%</span></div>
+        <div class="tier-badge t1" id="tierBadge">明显好感</div>
+      </div>
+
+      <div class="tier" id="tierName"></div>
+
+      <div class="section-title">五维心动分析</div>
+      <div class="dims" id="dimsBox"></div>
+
+      <div class="section-title">详细解读</div>
+      <div class="res-text" id="resText"></div>
+
+      <div class="advice-box">
+        <div class="advice-title">💌 给你的建议</div>
+        <div class="advice-text" id="adviceText"></div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-title">💝 温馨提示</div>
+        <div class="tip-text">心动是两个人的事，测试只是参考。无论结果如何，都请相信自己的感受，也尊重对方的节奏。爱情不是考试，没有标准答案。</div>
+      </div>
+
+      <button class="btn ghost" id="retryBtn">重 新 测 试</button>
+      <div class="tiny">趣味测评，仅供娱乐参考。</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   一、口令配置
+   ============================================================ */
+const PASSWORDS = [ '3870' ];
+
+/* ============================================================
+   二、题库 —— Ta 是男生（38 题）
+   ============================================================ */
+const Q_BOY = [
+{q:"在多人场合，他的目光会不自觉落在你的身上？",o:["经常对视，对视会躲闪或微笑","人群里会下意识留意你","偶尔扫到，不会停留很久","很少关注你"]},
+{q:"主动发起聊天的人通常是谁？",o:["基本都是他主动找你","大部分时候他主动","你来我往，一半一半","几乎都是你主动，他很少开启话题"]},
+{q:"他会不会主动或在聊天中提及自己的过往经历？",o:["主动跟你讲很多往事","你问到会愿意细说自己过往","只聊表面小事，很少提过去","回避聊自己的经历，闭口不谈"]},
+{q:"集体活动的时候，他会下意识靠近你、站在你附近？",o:["主动靠近，站在你旁边","有机会就会靠近你","位置随机，不会特意靠近","刻意和你保持距离"]},
+{q:"你们见面时，他对待你的态度，对比普通朋友是怎样的？",o:["明显更温柔特殊，和别人完全不一样","对你会更热情一点","对你和其他朋友差别不大","对你比普通朋友更冷淡客气"]},
+{q:"当你约他单独见面，他的态度是？",o:["很开心，基本不会拒绝，还会期待下次","有空就愿意赴约","经常找理由推脱，有空才勉强答应","直接拒绝，尽量不和你单独出门"]},
+{q:"他对你有没有暧昧的语言或动作？",o:["常有暧昧试探的话语、小动作","偶尔有一点点暧昧感","只有朋友间正常交流，无暧昧","刻意保持边界，杜绝暧昧"]},
+{q:"在一群人面前，他会有照顾你的语言或动作吗？",o:["当众下意识照顾你，优先顾及你的感受","看到你需要时会出手照顾","只照顾所有人，不会单独关照你","很少顾及你的情况"]},
+{q:"你的消息他能否及时回复？",o:["看到基本很快回，忙完也会主动解释","有空就回，偶尔延迟","经常隔很久才回复","常常已读不回，回复简短敷衍"]},
+{q:"聊天结尾，是谁结束对话居多？",o:["舍不得结束，大多是他收尾或找新话题延续","你来我往，双方轮流结束","经常是他率先结束对话","总是他直接消失终止聊天"]},
+{q:"对比对待别人，他对你的耐心程度？",o:["对你耐心远高于其他人","对你会比普通人多一点耐心","对你耐心和其他人差不多","对你更容易不耐烦"]},
+{q:"他是否愿意把你介绍给他的朋友？",o:["主动带你认识他好友，让朋友们知道你的存在","你提出的话，愿意介绍","不主动，也不太想让你接触他圈子","不愿意让他朋友知道你的存在"]},
+{q:"你遇到困难时，他是否愿意出手帮忙？",o:["能主动发现你的难处并主动帮忙","你开口求助，愿意帮你","只有顺手方便才帮","找借口推脱拒绝"]},
+{q:"他会试探或侧面向人打听你的感情状态吗？",o:["多次主动打探你的感情情况","偶尔试探你有没有喜欢的人","完全不关心你的感情状况","回避聊感情相关话题"]},
+{q:"他会不会主动与你分享日常碎片、生活琐事？",o:["高频分享日常大小事，报备生活","想到了就会跟你分享","很少主动分享，你问才说","几乎不会分享私人日常"]},
+{q:"你开玩笑撩他时，他的反应是？",o:["接住你的撩，反过来和你互动","有点害羞，但不会回避","一笑而过，转回普通话题","觉得不适，转移话题"]},
+{q:"当你倾诉情绪、分享心事，他愿意耐心倾听并记住细节吗？",o:["很上心，记住你很多小事","愿意听，重要的事会记住","简单回应，听完容易忘记","敷衍，快速转移话题"]},
+{q:"他会主动创造只有你们两个人单独相处的机会吗？",o:["经常制造独处机会","有机会就会尝试单独相处","不排斥独处，但不会主动创造","刻意避开和你独处"]},
+{q:"当你向他求助，他的态度是？",o:["优先帮你解决问题，愿意付出时间","力所能及的事愿意帮忙","只有方便的时候才帮","找借口推脱拒绝"]},
+{q:"你随口提到的喜好，他会记住吗？",o:["牢牢记住，后面会主动呼应","重要的事情能记住","听过就忘，需要你反复提醒","完全不在意你说的喜好"]},
+{q:"你们产生矛盾、冷淡之后，他会主动破冰缓和关系吗？",o:["冷静后主动来找你修复关系","如果你释放善意，他愿意配合和好","僵持着，等你主动","顺势疏远，不再联系"]},
+{q:"聊天或者开玩笑时，他会试探你对亲密关系的想法吗？",o:["多次试探你的恋爱观、择偶偏好","偶尔提起感情话题试探你","只聊普通话题，不碰恋爱相关","避开恋爱相关话题"]},
+{q:"他是否会有意无意与你制造肢体接触？",o:["自然地有轻肢体接触，不越界","偶尔不经意碰到，不会躲开","刻意保持肢体距离，不触碰","你靠近时他会后撤回避"]},
+{q:"他会主动浏览、留意你的社交动态吗？",o:["经常看，对你的动态了如指掌","有空会刷到你的动态","很少关注你的社交账号","完全不看你的动态"]},
+{q:"他会主动关心你的近况、身体或者情绪吗？",o:["会主动关心你的身体、心情，能敏锐捕捉你的情绪变化","看到你状态不好会关心","只有你主动说，才简单问候","很少关心你的状态"]},
+{q:"当你和其他异性亲近，他会出现明显不自在、介意的反应吗？",o:["明显吃醋、失落，会表达介意","有点不自在，但不会明说","无所谓，没有明显情绪","觉得和他无关"]},
+{q:"一起逛街吃饭，在开销这件事上他的做法是？",o:["主动承担大部分开销，愿意为你付出","会主动买单，也接受 AA","基本 AA，很少主动承担","基本等你来付钱，不愿付出"]},
+{q:"他主动约你的频率是？",o:["经常主动约你见面，哪怕他很忙","有空就会约你","很少主动邀约，大多是你约他","不会主动约你"]},
+{q:"你的新变化，他会一眼识别到吗？",o:["会很快发现你发型、妆容、穿搭等变化","你提醒之后，能发现","很难察觉你的变化","不在意你的外在变化"]},
+{q:"当你否定他的想法或做法，他的态度是怎样的？",o:["愿意认真听你的想法，尊重你的不同意见","会争辩，但尊重你的看法","容易觉得不舒服，想说服你","反感你的否定，会生气抬杠"]},
+{q:"和你相处时，他的肢体语言是？",o:["身体前倾，主动靠近你","放松，不抗拒靠近","身体后仰，保持距离","下意识后退、远离你"]},
+{q:"他会不会为了你改变自己的原定计划？",o:["愿意为了你调整计划","不重要的安排可以改动","不会轻易更改自己计划","不会为你调整任何安排"]},
+{q:"你消失几天不找他，他会怎样？",o:["主动来找你，担心你怎么了","隔一段时间会来问问情况","你不找他，他也不找你","你消失，他毫无反应"]},
+{q:"他会记住你的生日或特殊时刻吗？",o:["牢牢记住，提前准备祝福或小惊喜","能记住，到日子会问候","需要你提醒才记得","记不住，也不在意"]},
+{q:"他对你们的初次见面或约会印象深刻吗？",o:["记得很多细节，经常提起初见或初次约会时的事情","记得大概场景","印象模糊，记不太清","没什么印象"]},
+{q:"当需要他帮你分析、出主意时，他会？",o:["认真思考，站在你的角度帮你细致地分析","简单给出可行建议","随便敷衍几句，不深入思考","不想帮你分析，直接推脱"]},
+{q:"他会不会对你展示疲惫、失落、难过等脆弱面？",o:["愿意和你倾诉负面情绪，展露脆弱","偶尔会和你说起烦心事","只展示积极一面，不聊负面情绪","从不和你倾诉内心感受"]},
+{q:"他对待你朋友的态度是？",o:["希望获得你朋友认可，主动好好表现","礼貌友好，愿意正常相处","保持礼貌距离，不多接触你的朋友","回避、不愿接触你的朋友"]}
+];
+
+/* ============================================================
+   三、题库 —— Ta 是女生（38 题）
+   ============================================================ */
+const Q_GIRL = [
+{q:"在多人聚会里，她看向你的方式更偏向？",o:["偷偷看你，一旦对视就害羞移开或者浅笑","人群里总会不自觉搜寻你的身影","偶尔扫一眼，目光不会停留","几乎不会看向你"]},
+{q:"日常聊天，谁更多主动开启话题？",o:["经常是她主动来找你，分享琐事","多数时候她主动开启对话","双方差不多，你来我往","基本都是你主动，她很少发起"]},
+{q:"和你聊天时，她愿意主动说起自己不轻易对外人讲的心事、过往吗？",o:["主动跟你倾诉很多经历与情绪","你询问后，愿意细说自己的故事","只聊表面话题，很少谈及自身","刻意回避，不愿聊自己的私事"]},
+{q:"集体活动的时候，她会下意识靠近你、站在你附近？",o:["会主动走到你身边待着","有机会就悄悄靠近你的位置","位置随缘，不会特意找你","刻意和你保持较远的距离"]},
+{q:"同样一件事，她对待你的态度，对比普通异性朋友？",o:["明显更柔软包容，对你特殊","对你会更热情客气一点","对待你和其他人差别不大","对你反而更冷淡拘谨"]},
+{q:"你提出单独约她见面，她的反应是？",o:["很期待，大多不会拒绝，还会主动规划行程","有空就愿意赴约","经常找理由推脱，有空才勉强答应","直接拒绝，尽量避免二人独处"]},
+{q:"和你相处时，会不会有含蓄暧昧的话语、小动作？",o:["经常有含蓄试探、亲近的小举动","偶尔流露一点点暧昧感","只有普通朋友的正常交流，无暧昧","刻意划清界限，杜绝暧昧"]},
+{q:"多人在场的时候，她会关注你的需求和感受吗？",o:["下意识优先顾及你的感受","看到你需要帮助才会关心","一视同仁，不会单独关照你","很少留意你的状况"]},
+{q:"你的消息，她的回复情况是？",o:["看到尽快回复，忙完会主动解释失联原因","有空就回，偶尔延迟","经常很久之后才回复","经常已读不回，回复简短敷衍"]},
+{q:"一段对话，大多是谁率先结束聊天？",o:["舍不得收尾，尽量延续话题","两个人轮流结束对话","常常是她主动终止聊天","经常直接消失，结束对话"]},
+{q:"对比其他人，她对你的耐心？",o:["对你耐心远高于别人，愿意听你倾诉","对你会多一份耐心","对你耐心和其他人差不多","对你更容易失去耐心"]},
+{q:"她是否愿意把你介绍给她闺蜜、好友圈子？",o:["主动把你介绍给自己的闺蜜好友，愿意让亲近的朋友知道你的存在","如果你提出，她愿意介绍","不主动，也不太想让你进入她的社交圈","不希望她身边朋友知道你的存在"]},
+{q:"当你遇到麻烦，她会不会主动伸出援手？",o:["察觉到你的难处，主动过来帮你","你开口求助，她愿意帮忙","只有顺手方便的时候才帮","找借口推脱拒绝"]},
+{q:"她会不会悄悄打听、侧面打探你的感情状况？",o:["多次委婉打听你有没有喜欢的人","偶尔试探你的感情状态","完全不关心你的感情情况","刻意避开感情相关话题"]},
+{q:"她会不会主动分享日常碎片（路上看到的风景、吃到的东西）？",o:["随手分享生活大小片段，乐于和你报备日常","想到的时候，就会发给你","很少主动分享，你问才简单说说","几乎不会主动分享私人日常"]},
+{q:"你开玩笑撩她的时候，她的反应是？",o:["害羞，但愿意接话和你互动","有点腼腆，不会躲开话题","反应平淡，转回普通话题","感到不适，快速转移话题"]},
+{q:"当你倾诉情绪、烦心事，她能不能记住你说的细节？",o:["认真倾听，牢牢记住很多小事","愿意倾听，重要事情能记住","简单安慰，听完容易遗忘","敷衍应付，快速跳过你的情绪"]},
+{q:"她会主动创造只有你们两个人独处的机会吗？",o:["会主动制造二人单独相处的机会","有机会就试着单独相处","不排斥独处，但不会主动安排","刻意避开只有你们两个人的场景"]},
+{q:"你向她求助一件麻烦、耗时间的事，她的态度是？",o:["优先帮你，愿意花时间精力","力所能及的事情愿意帮忙","只有方便的时候才出手","找理由推脱拒绝"]},
+{q:"你随口提到的喜好、小愿望，她会不会记在心里？",o:["记得很清楚，后续会主动呼应","重要内容可以记住","听过就忘，需要反复提醒","不在意你提到的喜好"]},
+{q:"你们闹别扭、关系冷淡之后，她会主动缓和关系吗？",o:["冷静之后主动来找你化解矛盾","如果你释放善意，她愿意和好","僵持不动，等你主动低头","借机慢慢疏远，不再联系"]},
+{q:"聊天闲聊时，她会试探你的恋爱观、理想型吗？",o:["经常委婉试探你的择偶想法","偶尔提起感情话题试探你","只聊日常，不触碰恋爱话题","回避聊感情相关内容"]},
+{q:"相处的时候，会不会不经意发生轻轻的肢体接触（碰手臂等）？",o:["自然轻微接触，不刻意躲开","偶尔无意碰到，不会后撤","刻意保持肢体距离，避免触碰","你靠近，她下意识后退躲开"]},
+{q:"她会留意、翻看你的社交平台动态吗？",o:["经常看，会记住动态内容并和你提起","有空会刷到你的动态","很少看你的社交账号","完全不关注你的动态"]},
+{q:"她会主动关心你的身体、情绪和近况吗？",o:["经常性主动关心你的状态","看到你低落时，主动问候","只有你主动说起，才简单问问","很少关心你的情绪与近况"]},
+{q:"看到你和别的异性亲近，她的反应是？",o:["明显失落、介意，情绪会写出来","心里不自在，但不会直接说","心态平淡，没有明显情绪波动","觉得和自己无关"]},
+{q:"外出吃饭、喝饮品，在付出方面她的做法是？",o:["主动为你准备小礼物、主动回请","有来有往，会主动分担开销","大多 AA，很少主动付出","习惯性等你来买单"]},
+{q:"她主动邀约你见面的频率是？",o:["经常主动约你出门","有空就会约你","极少主动邀约，大多是你约她","从来不会主动约你"]},
+{q:"当她做选择犹豫不定时，会不会来征求你的意见？",o:["很愿意询问你的意见，并且会认真参考你的想法","偶尔会来问你的看法，但最后还是以自己的想法为主","很少询问你的意见看法","完全不会"]},
+{q:"她是否期待得到你的认可与夸奖？",o:["很在意你的看法，你的认可与否会影响她的情绪","会在意你的想法，如果被肯定会开心","不太在意你的评价，你认可与否她都不会有太大变化","完全不在乎你怎么看她，你的评价不会影响她"]},
+{q:"和你面对面聊天，她的肢体状态是？",o:["身体倾向你，专注看着你","姿态放松，不抗拒靠近","身体后仰，保持距离","下意识向后躲避、拉开距离"]},
+{q:"如果有计划好的安排，她愿意为你调整原定计划吗？",o:["愿意尝试调整计划迁就你","不重要的安排可以改动","不会轻易更改自己计划","不会为你调整任何安排"]},
+{q:"你连续几天不主动找她，她会怎么做？",o:["主动来找你，担心你的情况","隔一段时间主动询问你的状态","你不找她，她也不会找你","完全没有反应"]},
+{q:"她是否记得你的生日、对你重要的特殊日子？",o:["牢牢记住，提前准备祝福或者小惊喜","记得，到时间会送上问候","需要你提醒，她才想起","记不住，也不在意"]},
+{q:"当她看到你的脆弱一面（难过、受挫、委屈），她是什么表现？",o:["会心疼，耐心陪伴、安慰","会安慰，尽力帮你舒缓情绪","简单安慰几句，然后转回普通话题","不知所措或者觉得麻烦，急于结束这个话题"]},
+{q:"当你迷茫，需要她帮你分析事情出主意，她会？",o:["站在你的角度，认真细致帮你梳理","简单给出可行建议","随便应付几句，不深入思考","不愿意帮你分析，直接推脱"]},
+{q:"她会不会在你面前流露脆弱、疲惫、委屈的一面？",o:["愿意对你倾诉难过、疲惫，展露脆弱","偶尔和你倾诉烦心事","只展示开心一面，很少谈及负面情绪","从不和你袒露内心负面感受"]},
+{q:"在你面前，她会不会偶尔使一点小性子、提出一些专属的小要求？",o:["只在你面前才会这样，是信任你的撒娇式小脾气，不会无理取闹","偶尔会有一点小任性，希望你多迁就她","基本不会，和你相处一直很客气、克制","经常无理取闹，提很多苛刻过分的要求"]}
+];
+
+/* ============================================================
+   四、五维分析
+   ============================================================ */
+const DIMS = [
+  { name:'目光追随',     emoji:'💗', desc:'注意力是否常常落在你身上', qs:[1,2,4,15,24,25,29,33] },
+  { name:'独一份的偏爱', emoji:'✨', desc:'你在他/她眼里是否与众不同', qs:[5,8,11,12,17,20,30,34,35] },
+  { name:'靠近的勇气',   emoji:'🫧', desc:'是否主动制造暧昧与独处', qs:[7,14,16,22,23,26,31,38] },
+  { name:'行动里的在意', emoji:'🌙', desc:'愿意为你花多少时间与心思', qs:[6,13,18,19,21,27,28,32,36] },
+  { name:'心事的钥匙',   emoji:'🔒', desc:'是否愿意向你展露脆弱与真实', qs:[3,9,10,37] }
+];
+
+/* ============================================================
+   五、导语 & 结果文案 & 建议
+   ============================================================ */
+const INTRO = {
+  boy:'很多时候，当局者迷，我们分不清他是天性温柔，还是对你偏爱。这套题目帮你看清他藏起来的心意。',
+  girl:'是不是总反复琢磨，她到底是不是喜欢你？女生表达好感大多含蓄内敛，很难分清她本身暖心，还是唯独对你特殊。这套女生动心行为测试，帮你看清她的心。'
+};
+
+const RESULTS = {
+  boy:[
+    { badge:'深深动心', badgeClass:'t0', tier:'他早已深深动心，心里很在意你',
+      text:'他对你不是一时兴起的好感，是发自内心的喜爱。\n他会下意识把你放在优先位置，愿意花时间、精力去记住你的喜好，主动创造见面机会，愿意向你展露不轻易给别人看见的脆弱。\n看到你和别的异性走近，内心会介意；发生矛盾也愿意主动低头破冰。他的耐心、分享欲、细心和对待其他人有明显差别。\n他在悄悄期待，和你更进一步。',
+      advice:'他的心动已经藏不住了。如果你也喜欢他，可以试着在合适的时机，温柔地表达你的感受，或者创造一次只属于你们两个人的相处。不用着急，好的关系值得慢慢来。' },
+    { badge:'明显好感', badgeClass:'t1', tier:'对你有明显好感，正在慢慢心动',
+      text:'他对你有好感，不排斥靠近你，愿意接纳你的情绪。\n你找他帮忙大多不会推脱，聊天愿意回应，见面也不会刻意回避。\n只是这份心动还没到「偏爱」程度，不会主动牺牲自己计划，不会频繁制造独处机会。他还处在观望阶段，会留意你的动态，偶尔试探你的感情状态。\n如果你主动释放善意，很有机会拉近关系。',
+      advice:'他对你是有好感的，只是还没到最确定的时候。别急着要答案，多制造一些轻松的相处机会，让彼此更熟悉。如果他真的有心，时间会给出答案。' },
+    { badge:'普通朋友', badgeClass:'t2', tier:'仅普通朋友，没有恋爱层面的心动',
+      text:'目前在他眼里，你是一个相处起来很舒服、可以轻松聊天的朋友。\n他的礼貌、热心和偶尔的帮忙，其实是他性格里自带的修养。这意味着他并不排斥你的靠近，只是还没有刻意为你腾出那个“偏爱”的位置。他可能暂时没有把注意力放在你细微的情绪变化上，也还没有生出想要主动打破朋友边界、单独约你的冲动。\n其实，比起去放大他偶尔释放的善意，不如把重心放回自己身上。一段舒服的关系，不需要一直靠单方面的猜测和用力来维持，顺其自然，也许会有新的转机。',
+      advice:'不过别灰心，感情是可以慢慢培养的。如果你喜欢他，可以尝试增加互动，展现自己的魅力，也许他只是还没发现你的好。先从朋友做起，把节奏放慢一点。' },
+    { badge:'暂未心动', badgeClass:'t3', tier:'对你无感，甚至下意识保持距离',
+      text:'现在的他，似乎还没有把注意力真正停留在你身上。\n他的回复显得有些迟缓，或者会下意识地避开单独见面的机会，这未必是因为你不够好，而是他目前在潜意识里，把你们的关系划定在了安全的“社交距离”之外。因为缺乏那份特别的好奇心，他可能很难敏锐地捕捉到你的情绪起伏。\n不必为了那些没有回应的聊天而陷入自我内耗。去敲一扇暂时没有回应的门，往往会让人感到疲惫。你的温柔和闪光点，值得留给那个能立刻读懂并热烈回应你的人。',
+      advice:'但这绝不意味着你不够好！有时候，心动是很玄妙的东西，没缘分或者频率不同，都会让两颗心擦肩而过。请把更多的爱留给自己，你的温柔和美好，值得遇到一个能立刻读懂并热烈回应你的人。' }
+  ],
+  girl:[
+    { badge:'深深动心', badgeClass:'t0', tier:'她早已深深动心，心里很在意你',
+      text:'女生动心往往藏在细节里，她对你的偏爱不是随口说说。\n她会默默留意你的一举一动，悄悄记住你的喜好；愿意在你面前卸下防备，展露很少对外人展示的脆弱。她敢在你的面前适度地卸下防备，流露一点专属的小任性，是对你深度信任的表现。\n看到你和其他异性靠近，内心会暗自介意；产生矛盾后，愿意主动缓和关系。她的分享欲、细心和耐心只对你特殊。\n她在悄悄期待，你们之间能更进一步。小提示：动心属实，但也要观察现实相处，慢慢推进，不要急于下结论。',
+      advice:'她的心动已经藏不住了。如果你也喜欢她，可以试着在合适的时机，温柔地表达你的感受，或者创造一次只属于你们两个人的相处。不用着急，好的关系值得慢慢来。' },
+    { badge:'明显好感', badgeClass:'t1', tier:'对你有明显好感，正在慢慢心动',
+      text:'她对你抱有好感，不排斥靠近你，愿意接纳你的情绪。\n你求助时大多不会推脱，聊天愿意积极回应，见面不会刻意回避，会默默留意你的动态，委婉试探你的感情想法。\n但她的好感还没有变成独一份的喜爱，不会轻易牺牲自己的计划，也不会频繁主动创造独处机会，这是处在观察和观望阶段的做法。\n建议适当表达心意，循序渐进的相处，更能看清彼此的真心。',
+      advice:'她对你是有好感的，只是还没到最确定的时候。别急着要答案，多制造一些轻松的相处机会，让彼此更熟悉。如果她真的有心，时间会给出答案。' },
+    { badge:'普通朋友', badgeClass:'t2', tier:'仅普通朋友，没有恋爱层面的心动',
+      text:'目前在她心里，你是一个值得信任、可以自在交流的朋友。\n女生面对朋友，也会大方地玩笑、顺手帮忙，但你可能会发现，她对你的态度和其他朋友并没有太大的不同。她还没有展露出那种“只对你一个人”的柔软或小任性，也还没准备好向你敞开更深层的情绪和日常。\n这并不代表你们之间没有可能。很多时候，女生的心动是需要慢慢建立安全感的。先从让她觉得毫无压力、相处愉快的朋友做起，把节奏放慢一点，也许反而会走得更稳。',
+      advice:'不过别灰心，感情是可以慢慢培养的。如果你喜欢她，可以尝试增加互动，展现自己的魅力，也许她只是还没发现你的好。先从朋友做起，把节奏放慢一点。' },
+    { badge:'暂未心动', badgeClass:'t3', tier:'对你无感，下意识保持距离',
+      text:'现在的她，可能还没有在心里为你留出一个特别的位置。\n她那些得体而有礼貌的回应，更多是出于女孩子本身的修养。面对你试图拉近关系的举动，她可能会有些不知所措，或者下意识地回避。她暂时还没有准备好接纳一份亲近，这也说明你们还需要更多的契机去建立真正的同频。\n不要因为暂时的不来电而自我怀疑。感情不是一场考试，频率暂时没有交汇，绝不意味着你不够优秀。先好好爱自己，当你闪闪发光的时候，一定会吸引到那个和你完全同频的人。',
+      advice:'暂时的不来电，真的不代表你不够优秀，也许只是时机或者频率还没有交汇。先好好爱自己，当你闪闪发光的时候，一定会遇到那个一眼就能看到你的人。' }
+  ]
+};
+
+/* ============================================================
+   六、逻辑
+   ============================================================ */
+const STORE_KEY = 'hm_unlock_v7';
+const MIN_SCORE = 38;
+const MAX_SCORE = 152;
+
+const $ = id => document.getElementById(id);
+const screens = { pwd:$('s-pwd'), gender:$('s-gender'), quiz:$('s-quiz'), result:$('s-result') };
+
+let gender = null;
+let questions = [];
+let answers = [];
+let current = 0;
+let locked = false;
+
+function showScreen(name){
+  Object.keys(screens).forEach(k => screens[k].classList.toggle('active', k === name));
+  window.scrollTo(0, 0);
+}
+
+function isUnlocked(){ try{ return localStorage.getItem(STORE_KEY)==='1'; }catch(e){ return false; } }
+function markUnlocked(){ try{ localStorage.setItem(STORE_KEY,'1'); }catch(e){} }
+
+/* ---------- 密码页 ---------- */
+const pwdInput = $('pwdInput');
+const pwdErr = $('pwdErr');
+const pwdCard = $('pwdCard');
+
+pwdInput.addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+  pwdErr.classList.remove('show');
+  if (this.value.length === 4) tryUnlock();
+});
+pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+$('pwdBtn').addEventListener('click', tryUnlock);
+
+function tryUnlock(){
+  const val = pwdInput.value.trim();
+  if (PASSWORDS.indexOf(val) !== -1) {
+    markUnlocked();
+    goGender();
+  } else {
+    pwdErr.classList.add('show');
+    pwdCard.classList.remove('shake');
+    void pwdCard.offsetWidth;
+    pwdCard.classList.add('shake');
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+}
+
+/* ---------- 性别选择 ---------- */
+const introWrap = $('introWrap');
+const introText = $('introText');
+
+document.querySelectorAll('.gender-item').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    gender = this.dataset.g;
+    document.querySelectorAll('.gender-item').forEach(b => b.classList.remove('on'));
+    this.classList.add('on');
+    introText.textContent = INTRO[gender];
+    introWrap.classList.remove('show');
+    void introWrap.offsetWidth;
+    introWrap.classList.add('show');
+  });
+});
+
+$('startBtn').addEventListener('click', function(){
+  if (!gender) return;
+  questions = (gender === 'boy' ? Q_BOY : Q_GIRL).slice();
+  answers = new Array(questions.length).fill(-1);
+  current = 0;
+  showScreen('quiz');
+  renderQuestion();
+});
+
+function goGender(){
+  gender = null;
+  document.querySelectorAll('.gender-item').forEach(b => b.classList.remove('on'));
+  introWrap.classList.remove('show');
+  introText.textContent = '';
+  pwdInput.value = '';
+  pwdErr.classList.remove('show');
+  showScreen('gender');
+}
+
+/* ---------- 答题 ---------- */
+const qTitle = $('qTitle');
+const optsEl = $('opts');
+const progFill = $('progFill');
+const progNum = $('progNum');
+const progPct = $('progPct');
+const backBtn = $('backBtn');
+const qBox = $('qBox');
+
+function renderQuestion(){
+  const q = questions[current];
+  const ratio = current / questions.length;
+  progFill.style.width = (ratio*100).toFixed(2) + '%';
+  progNum.textContent = '第 ' + (current+1) + ' / ' + questions.length + ' 题';
+  progPct.textContent = Math.round(ratio*100) + '%';
+
+  qTitle.textContent = q.q;
+  optsEl.innerHTML = '';
+  q.o.forEach(function(text, i){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'opt' + (answers[current] === i ? ' on' : '');
+    btn.innerHTML = '<span class="badge">' + 'ABCD'[i] + '</span><span>' + text + '</span>';
+    btn.addEventListener('click', function(){ choose(i); });
+    optsEl.appendChild(btn);
+  });
+
+  backBtn.disabled = (current === 0);
+
+  qBox.classList.remove('q-fade');
+  void qBox.offsetWidth;
+  qBox.classList.add('q-fade');
+}
+
+function choose(i){
+  if (locked) return;
+  locked = true;
+  answers[current] = i;
+
+  const btns = optsEl.querySelectorAll('.opt');
+  btns.forEach((b, idx) => b.classList.toggle('on', idx === i));
+
+  setTimeout(function(){
+    locked = false;
+    if (current < questions.length - 1) {
+      current++;
+      renderQuestion();
+    } else {
+      progFill.style.width = '100%';
+      progPct.textContent = '100%';
+      setTimeout(showResult, 200);
+    }
+  }, 260);
+}
+
+backBtn.addEventListener('click', function(){
+  if (current > 0 && !locked) { current--; renderQuestion(); }
+});
+
+/* ---------- 结果 ---------- */
+function calcScore(){
+  return answers.reduce((sum, a) => sum + (4 - (a < 0 ? 3 : a)), 0);
+}
+function getTier(score){
+  if (score >= 121) return 0;
+  if (score >= 85) return 1;
+  if (score >= 53) return 2;
+  return 3;
+}
+function getPercent(score){
+  const p = 10 + (score - MIN_SCORE) * 89 / (MAX_SCORE - MIN_SCORE);
+  return Math.max(10, Math.min(99, Math.round(p)));
+}
+
+function calcDims(){
+  return DIMS.map(function(d){
+    let got = 0;
+    d.qs.forEach(function(qn){
+      const a = answers[qn - 1];
+      if (a >= 0) got += (4 - a);
+    });
+    const full = d.qs.length * 4;
+    return { name:d.name, emoji:d.emoji, desc:d.desc, pct: Math.round(got / full * 100) };
+  });
+}
+
+function showResult(){
+  const score = calcScore();
+  const tierIdx = getTier(score);
+  const percent = getPercent(score);
+  const data = RESULTS[gender][tierIdx];
+
+  const badge = $('tierBadge');
+  badge.textContent = data.badge;
+  badge.className = 'tier-badge ' + data.badgeClass;
+
+  $('tierName').textContent = data.tier;
+
+  const dims = calcDims();
+  const dimsBox = $('dimsBox');
+  dimsBox.innerHTML = '';
+  dims.forEach(function(d, i){
+    const div = document.createElement('div');
+    div.className = 'dim';
+    div.innerHTML =
+      '<div class="dim-head"><span class="dim-name">' + d.emoji + ' ' + d.name + '</span>' +
+      '<span class="dim-val">' + d.pct + '%</span></div>' +
+      '<div class="dim-bar"><i></i></div>' +
+      '<div class="dim-desc">' + d.desc + '</div>';
+    dimsBox.appendChild(div);
+    setTimeout(function(){
+      div.querySelector('.dim-bar i').style.width = d.pct + '%';
+    }, 120 + i * 100);
+  });
+
+  $('resText').innerHTML = data.text.split('\n').filter(p => p.trim()).map(p => '<p>' + p + '</p>').join('');
+  $('adviceText').textContent = data.advice;
+
+  showScreen('result');
+  animateNumber($('pctNum'), percent);
+}
+
+function animateNumber(el, target){
+  const duration = 720;
+  let startTime = null;
+  function step(t){
+    if (!startTime) startTime = t;
+    const p = Math.min((t - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * eased);
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+
+$('retryBtn').addEventListener('click', function(){
+  answers = []; current = 0; goGender();
+});
+
+/* ---------- 启动 ---------- */
+(function init(){
+  if (isUnlocked()) goGender();
+  else showScreen('pwd');
+})();
+</script>
+</body>
+</html>
